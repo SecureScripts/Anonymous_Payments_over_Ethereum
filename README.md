@@ -16,72 +16,9 @@ This repository allows you to:
 
 ---
 
-## Overview
-
-The protocol ensures that a payer remains indistinguishable among at least **k** honest users, even against an adversary capable of monitoring all on-chain and off-chain traffic. Users are grouped into cyclic structures called **rings**, within which they exchange **zero-fee cover transactions** carrying a layered-encrypted bus.
-
-### Core Concepts
-
-- **Ring overlay:** Users are partitioned into groups of size *(k + α)*, forming anonymity sets.
-- **Cover transactions:** Zero-fee Ethereum transactions carrying an encrypted bus; indistinguishable from one another.
-- **Layered encryption:** Each hop adds an encryption layer, making all bus seats indistinguishable.
-- **Surrogate keys:** Pseudonymous public keys used to sign anonymous payment requests.
-- **Exit user:** Decrypts the bus and submits collected payment requests to the smart contract.
-- **t-confirmation mechanism:** Prevents unauthorized payments by requiring approval from multiple ring members.
-- **Refundable deposit with trust-weighted rewards:** Encourages cooperation and discourages free-riding.
-
----
-
-## Protocol Summary
-
-### 1. Ring Formation
-Users join the root contract. Once **N = β · (k + α)** users have joined, they are shuffled into β rings using a future block hash, ensuring unpredictability and resistance to manipulation.
-
-### 2. Surrogate Key Exchange
-Each participant submits a surrogate public key through an encrypted bus. The exit user eventually broadcasts the full list of surrogate keys, without revealing the mapping to Ethereum addresses.
-
-### 3. Bus Circulation and Cover Traffic
-A bus with *(k + α)* seats circulates through ring members. Each hop:
-- decrypts one layer  
-- optionally inserts a new encrypted payment tuple into its seat  
-- re-encrypts the entire bus  
-
-Continuous cover traffic makes all users indistinguishable.
-
-### 4. Anonymous Payment Submission
-To issue a payment, a user inserts into their seat:
-
-```
-⟨ServiceProvider, Amount, Signature_with_surrogate_key⟩
-```
-
-This tuple is encrypted in multiple layers and cannot be linked to the user's position.
-
-### 5. Payment Execution
-The exit user:
-1. Decrypts all seats  
-2. Calls `startConfirm()` with the collected payment requests  
-3. Users call `confirm()`  
-4. Exit user calls `pay()`, executing payments that reached **t** confirmations  
-5. At epoch boundaries, `depositBack()` distributes trust-weighted refunds  
-
----
-
-## Features
-
-- k-anonymity against global network observers  
-- No direct communication among users  
-- Ethereum-compatible implementation  
-- Incentive-compatible through refundable deposits  
-- Extensive simulation engine  
-- Realistic execution-based gas-cost profiling  
-- Reproduction of all experimental results from the paper  
-
----
-
 ## Repository Structure
 
-(To be completed once code structure is provided.)
+(To be completed)
 
 ```
 /src/                     # Simulator implementation
@@ -96,7 +33,7 @@ README.md
 
 ## Installation
 
-(To be updated once dependencies are provided.)
+(To be updated)
 
 ```bash
 git clone https://github.com/<username>/Anonymous_Payments_over_Ethereum.git
@@ -114,7 +51,7 @@ Smart-contract deployment requires:
 
 ## Usage
 
-(To be completed when script names are provided.)
+(To be completed)
 
 Example:
 
