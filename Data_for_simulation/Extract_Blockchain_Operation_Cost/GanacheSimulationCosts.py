@@ -142,10 +142,7 @@ def setConfirm(deployed_contract, owner):
 #  Main Experiment Loop
 # -------------------------------------------------------------------------------------
 
-for k in range(100, 101, 10):  # Here only k=100 is executed
-    if k == 100:
-        alpha_values = [int(0.3 * k)]
-    else:
+for k in range(10, 101, 10):
         alpha_values = [int(0.1 * k), int(0.2 * k), int(0.3 * k)]
 
     for alpha in alpha_values:
