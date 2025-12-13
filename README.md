@@ -20,14 +20,32 @@ This repository allows you to:
 
 (To be completed)
 
+## Repository Structure
+
 ```
-/src/                     # Simulator implementation
-/contracts/               # Solidity smart contracts
-/experiments/             # Experiment scripts
-/notebooks/               # Analysis and plotting
-/data/                    # Preprocessed datasets or download utilities
-README.md
+Simulation/
+└── Blockchain_BUS/
+    ├── User.py                    # Simulation of a single user
+    ├── BlockchainRing.py          # Simulation of the full lifecycle of a user ring
+    ├── SuperMain.py               # Entry point to run the complete simulation campaign
+    └── simulation_results.csv     # Output data produced by the simulator
+
+Price_Estimate/
+└── Average_wei_dollars_estimation.py   # Script to compute the 2024 average gas cost in wei and USD
+
+Data_for_simulation/
+└── Data_for_simulation/
+    ├── Extract_Blockchain_Operation_Cost/
+    │   ├── GanacheSimulationCosts.py   # Runs Ganache-based profiling of smart contract operations
+    │   └── FINAL_RES.csv               # Extracted blockchain cost results
+    │
+    └── Extract_User_Payments_Data/     # (To be completed / adjusted)
+
+Final_Plots/
+├── Extract_Plots.py                    # Generates the figures used in the paper
+└── (plots saved here)                  # All final plots produced from simulation_results.csv
 ```
+
 
 ---
 
