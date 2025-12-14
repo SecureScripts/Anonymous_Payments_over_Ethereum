@@ -134,121 +134,233 @@ Ensure Ganache is running and its RPC URL matches the one defined in `Parameters
 
 ## Usage
 
-The complete workflow consists of three stages:
+The experimental workflow is composed of four main stages:
 
-1. Pre-compute required CSV input files  
-2. Run the main simulation  
-3. Generate the plots used in the paper  
+1. Pre-compute input data (gas price, Ether price, and blockchain operation costs)  
+2. Preprocess the payment dataset  
+3. Run the main simulation  
+4. Generate the plots used in the paper  
+
+Each step is described in detail below.
+
+---
 
 ### 1. Pre-compute Input Data
 
-#### 1.1 Average gas & Ether prices (Price_Estimate)
+#### 1.1 Average gas price and Ether price (2024)
+
+The script in `Price_Estimate/` computes the average cost of one gas unit in USD
+for the year 2024.
+
+From the project root:
 
 ```bash
 cd Price_Estimate
 python Average_wei_dollars_estimation.py
 ```
 
-This script reads:
-- `export-AvgGasPrice.csv`
-- `export-EtherPrice.csv`
+This script reads the following input files:
 
-and computes the average USD cost per gas unit.
+- `export-AvgGasPrice.csv` — average gas price (wei per gas unit)
+- `export-EtherPrice.csv` — average Ether price (USD per ETH)
 
-#### 1.2 Smart contract gas-cost profiling (Ganache)
+and computes the average **USD-per-gas** value.
+
+⚠️ **Important note**  
+The resulting value is already set in `SuperMain.py` as the constant:
+
+```python
+GAS_IN_DOLLARS = ...
+```
+
+If the gas price estimation is recomputed using updated data, this value must be
+manually updated in `SuperMain.py` before running the simulation.
+
+
+#### 1.2 Blockchain operation costs via Ganache
+
+The script `GanacheSimulationCosts.py` measures the execution gas costs of the
+smart contract functions used by the protocol.
+
+From the project root:
 
 ```bash
 cd Data_for_simulation/Extract_Blockchain_Operation_Cost
 python GanacheSimulationCosts.py
 ```
 
-Output:
+Requirements:
+- A local Ganache instance must be running
+- The smart contract implementing the protocol must be available
+  in the same folder (used only for gas-cost profiling)
+
+This script:
+- Deploys the smart contract on Ganache
+- Executes `startConfirm()`, `confirm()`, `setConfirm()`, `pay()`, and `depositBack()`
+  for different workloads
+- Produces the file:
+
 ```
 FINAL_RES.csv
 ```
 
-This file is used by the simulator to model realistic blockchain execution costs.
-
-#### 1.3 Payment dataset preprocessing
-
-```bash
-cd Data_for_simulation/Extract_User_Payments_Data
-python <TODO: dataset_processing_script>.py
-```
-
-This step must generate a file similar to:
-
-```
-Data_for_simulation/UserPayments/output_selection_2020/filtered_dataset.csv
-```
-
-which is consumed by `SuperMain.py`.
+which is later loaded by `SuperMain.py` to model realistic blockchain costs.
 
 ---
 
-### 2. Run the Main Simulation
+### 2. Payment Dataset Preprocessing
 
-This is the core experiment campaign.
+The payment traces used by the simulator are derived from the **IBM Credit Card
+Transactions Dataset**.
+
+#### 2.1 Download the dataset
+
+The raw dataset is not included in this repository due to its size (~2 GB).
+
+It can be downloaded from Kaggle:
+
+```
+https://www.kaggle.com/datasets/ibm/credit-card-transactions
+```
+
+After downloading, place the file:
+
+```
+credit_card_transactions-ibm_v2.csv
+```
+
+inside the folder:
+
+```
+Data_for_simulation/Extract_User_Payments_Data/
+```
+
+
+#### 2.2 Initial preprocessing
+
+This step filters the raw dataset and extracts per-user payment traces.
+
+From the project root:
+
+```bash
+cd Data_for_simulation/Extract_User_Payments_Data
+python first_dataset_preprocess.py
+```
+
+This script:
+- Removes fraudulent and erroneous transactions
+- Filters out negative amounts
+- Converts dates to UNIX timestamps (milliseconds)
+- Produces:
+
+```
+user_transaction_pairs.csv
+```
+
+containing, for each user, a list of `(timestamp_ms, amount)` pairs.
+
+
+#### 2.3 CDF plots for dataset characterization (Figures 3 and 4)
+
+The following script generates the CDF plots used to characterize the dataset
+in the paper (Figures 3 and 4).
+
+```bash
+python generateCDF.py
+```
+
+This script reads precomputed CSV files and generates PDF figures comparing:
+- payment amount distributions
+- mean interpayment time distributions
+
+
+#### 2.4 Final dataset creation (wallet-capped users, year 2020)
+
+The final dataset used by the simulator is created with:
+
+```bash
+python final_dataset_creation.py
+```
+
+This script:
+- Selects users with activity in year 2020
+- Keeps the top users by total spending
+- Enforces an equal wallet size for all selected users
+- Generates the final dataset:
+
+```
+output_selection_2020/filtered_dataset.csv
+```
+
+This file is the **input dataset used by `SuperMain.py`**.
+
+---
+
+### 3. Run the Main Simulation
+
+The core experimental results of the paper are produced by running the simulator.
+
+From the project root:
 
 ```bash
 cd Simulation/Blockchain_BUS
 python SuperMain.py
 ```
 
-Output:
+This script:
+- Loads the wallet-capped 2020 dataset
+- Loads blockchain gas-cost profiles from `FINAL_RES.csv`
+- Simulates multiple rings under different configurations:
+  - bus hop time
+  - initial deposit size
+  - collaboration level of non-cooperative users
+- Runs multiple repetitions for statistical robustness
+
+At the end, it produces:
+
 ```
 simulation_results.csv
 ```
 
-This file contains:
-- Mean waiting times
-- Expenses of cooperative users
-- Expenses of non-cooperative users
-- Theoretical deposit values
-- All aggregated statistics for plotting
+which contains all aggregated metrics used for plotting and analysis.
 
 ---
 
-### 3. Generate Final Plots
+### 4. Generate Final Plots (Figures 5–9)
+
+The plots presented in the paper are generated from `simulation_results.csv`.
+
+#### 4.1 Heatmaps and waiting-time plots (Figures 5–8)
+
+From the project root:
 
 ```bash
 cd Final_Plots
-python Extract_Plots.py
+python HeatmapPlots.py
 ```
 
-This script reads `simulation_results.csv` and produces all figures in the paper.
+This script generates:
+- Heatmaps of expense differences (non-cooperative vs cooperative users)
+- Waiting-time plots as a function of bus hop time
 
-Plots are saved in:
+These figures correspond to **Figures 5–8** in the paper.
 
-```
-Final_Plots/
-```
 
----
+#### 4.2 Expense vs waiting-time plot (Figure 9)
 
-## Quick Start
+From the same folder:
 
 ```bash
-# 1) Compute USD/gas conversion
-cd Price_Estimate
-python Average_wei_dollars_estimation.py
-
-# 2) Compute smart contract gas costs (requires Ganache)
-cd ../Data_for_simulation/Extract_Blockchain_Operation_Cost
-python GanacheSimulationCosts.py
-
-# 3) Prepare payment dataset
-cd ../Extract_User_Payments_Data
-python <TODO: dataset_processing_script>.py
-
-# 4) Run full simulation
-cd ../../Simulation/Blockchain_BUS
-python SuperMain.py
-
-# 5) Generate final plots
-cd ../../Final_Plots
-python Extract_Plots.py
+python ExpensesPlot.py
 ```
+
+This script generates the plot showing expenses (as a percentage of the wallet)
+versus mean waiting time for fully cooperative users.
+
+This corresponds to **Figure 9** in the paper.
+
+All figures are saved in the `Final_Plots/` directory.
+
 
 ---
 
