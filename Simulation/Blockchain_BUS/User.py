@@ -103,10 +103,10 @@ class User:
         # There must be no currently pending payment
         assert self.current_pending_payment is None
 
-        time, payment, remainder = self.payments[0]
+        time, payment = self.payments[0]
         if time <= current_time:
             # Mark payment as pending and signal on the bus
-            self.current_pending_payment = (time, payment, remainder)
+            self.current_pending_payment = (time, payment)
             bus.append(self.user_id)
         return
 
@@ -132,7 +132,7 @@ class User:
         # Remove the executed payment from the queue
         self.payments.pop(0)
 
-        scheduled_time, amount, _ = self.current_pending_payment
+        scheduled_time, amount = self.current_pending_payment
 
         # Store waiting time for this payment
         self.all_waiting_time.append(current_time - scheduled_time)

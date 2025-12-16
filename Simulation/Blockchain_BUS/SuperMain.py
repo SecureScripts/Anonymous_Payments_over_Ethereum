@@ -276,7 +276,7 @@ def mean_sd(values):
 # --------------------------------------------------------------------------------------
 
 # Path to Ganache gas measurement results (FINAL_RES.csv)
-FINAL_RES_CSV = "../../Data_for_simulation/Extract_Blockchain_Operation_Cost/FINAL_RES.csv"
+FINAL_RES_CSV = "..\..\Data_for_simulation\Extract_Blockchain_Operation_Cost\FINAL_RES.csv"
 
 # Cost in USD of one gas unit (from Price_Estimate results for 2024)
 GAS_IN_DOLLARS = 0.0000598392
@@ -293,7 +293,7 @@ E = 20
 
 # Path to the filtered 2020 dataset ("wallet-capped" users)
 FILTERED_DATASET_CSV = (
-    "../../Data_for_simulation/UserPayments/output_selection_2020/filtered_dataset.csv"
+    "..\..\Data_for_simulation\Extract_User_Payments_Data\output_selection_2020\\filtered_dataset.csv"
 )
 
 # Output file for all simulation results
@@ -447,7 +447,7 @@ def main():
 
                                 # Assign payments from the chosen source users
                                 for new_uid, src_idx in enumerate(chosen):
-                                    payments = pairs_by_source[src_idx]  # [[ts_ms, amount], ...]
+                                    payments = sorted(pairs_by_source[src_idx], key=lambda x: x[0]) # [[ts_ms, amount], ...]
                                     users[new_uid].payments = payments
 
                                     if payments:

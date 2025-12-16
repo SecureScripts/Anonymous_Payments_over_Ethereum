@@ -252,5 +252,7 @@ class BlockchainRing:
         self.current_epoch_num += 1
         self.end_epoch = False
 
+        print([len(user.payments) for user in self.users])
         # At the end of the ring lifetime, the remaining deposit should be negligible
+        print(f"Deposit={self.deposit}")
         assert self.deposit < 0.001
